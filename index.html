@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="大额资金往来，您的税负合规吗？专业合规自测工具">
+<meta property="og:title" content="大额资金往来 您的税负合规吗？">
+<meta property="og:description" content="分红·居间费·劳务费，三分钟自测税负风险">
+<meta property="og:image" content="">
+<meta property="og:type" content="website">
+<title>大额资金往来 您的税负合规吗？</title>
+<style>
+  :root {
+    --brown-dark: #3C2F1D;
+    --brown-mid: #5C3D1E;
+    --gold: #C49A52;
+    --gold-dark: #8B6914;
+    --gold-light: #D4B870;
+    --cream: #F5EDE0;
+    --cream-light: #FAF6F0;
+    --green: #2D5A27;
+    --text-dark: #3C2F1D;
+    --text-mid: #6B5A44;
+    --text-light: #8B7355;
+    --white: #FFFFFF;
+    --red: #C0392B;
+    --orange: #D4932A;
+    --border: #E8E0D5;
+    --shadow: 0 4px 20px rgba(60, 47, 29, 0.10);
+    --shadow-lg: 0 8px 32px rgba(60, 47, 29, 0.15);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--cream-light);
+    color: var(--text-dark);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Page transitions */
+  .page {
+    display: none;
+    padding: 0 20px 40px 20px;
+    min-height: 100vh;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  .page.active { display: block; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(180deg, var(--brown-dark) 0%, var(--brown-mid) 100%);
+    margin: 0 -20px;
+    padding: 32px 20px 28px 20px;
+    text-align: center;
+    border-radius: 0 0 24px 24px;
+    position: relative;
+  }
+  .header-tag {
+    display: inline-block;
+    background: rgba(196, 154, 82, 0.15);
+    border: 1px solid rgba(196, 154, 82, 0.35);
+    border-radius: 20px;
+    padding: 5px 16px;
+    margin-bottom: 16px;
+  }
+  .header-tag span {
+    color: var(--gold-light);
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+  .header h1 {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* Sub header (inner pages) */
+  .sub-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    margin-bottom: 8px;
+  }
+  .sub-header .back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-dark);
+    transition: background 0.2s;
+  }
+  .sub-header .back-btn:active { background: #d5cfc5; }
+  .sub-header .title {
+    flex: 1;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-right: 36px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  /* Home - service cards */
+  .service-cards { margin-top: 20px; }
+  .service-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-left: 4px solid transparent;
+  }
+  .service-card:active {
+    transform: scale(0.98);
+    box-shadow: var(--shadow-lg);
+  }
+  .service-card.card-dividend { border-left-color: var(--gold); }
+  .service-card.card-brokerage { border-left-color: var(--green); }
+  .service-card.card-labor { border-left-color: var(--brown-mid); }
+
+  .service-card .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+  }
+  .card-dividend .icon-box { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); }
+  .card-brokerage .icon-box { background: linear-gradient(135deg, #1a5c3a, #2d7a4f); }
+  .card-labor .icon-box { background: linear-gradient(135deg, var(--brown-mid), #7a5c3e); }
+
+  .service-card .card-info { flex: 1; }
+  .service-card .card-info .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+  .service-card .card-info .card-sub {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .service-card .arrow {
+    color: var(--gold);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Trust section */
+  .trust-section {
+    text-align: center;
+    padding: 24px 0 8px 0;
+  }
+  .trust-section .trust-stats {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 16px;
+  }
+  .trust-stat {
+    text-align: center;
+  }
+  .trust-stat .num {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold-dark);
+  }
+  .trust-stat .label {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .trust-disclaimer {
+    font-size: 11px;
+    color: var(--text-light);
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    line-height: 1.7;
+  }
+
+  /* Calculator Page */
+  .calc-intro {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.8;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .calc-section { margin-bottom: 20px; }
+
+  .calc-section .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-mid);
+    margin-bottom: 12px;
+  }
+
+  /* Amount input */
+  .amount-input-group {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .amount-input-group .input-label {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+  .amount-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .amount-input-row .currency {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  .amount-input-row input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--cream-light);
+  }
+  .amount-input-row input:focus {
+    border-color: var(--gold);
+  }
+  .amount-input-row .unit {
+    font-size: 14px;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+
+  /* Quick amount buttons */
+  .quick-amounts {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .quick-amount {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+  }
+  .quick-amount:active, .quick-amount.selected {
+    background: var(--gold);
+    color: var(--white);
+    border-color: var(--gold);
+  }
+
+  /* Slider */
+  .slider-container { margin-top: 16px; }
+  .slider-container input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-dark));
+    outline: none;
+  }
+  .slider-container input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--gold-dark);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  /* Result Card */
+  .result-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .r-label { font-size: 14px; color: var(--text-mid); }
+  .result-row .r-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  .result-row .r-value.tax-amount { color: var(--red); }
+
+  /* Risk badge */
+  .risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .risk-low {
+    background: #E8F5E9;
+    color: var(--green);
+  }
+  .risk-medium {
+    background: #FFF3E0;
+    color: var(--orange);
+  }
+  .risk-high {
+    background: #FFEBEE;
+    color: var(--red);
+  }
+
+  /* Advice section */
+  .advice-section {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .advice-section .advice-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold-dark);
+    margin-bottom: 12px;
+  }
+  .advice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.7;
+  }
+  .advice-item .advice-icon { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+
+  /* Buttons */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 25px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: var(--white);
+    box-shadow: 0 4px 14px rgba(139, 105, 20, 0.3);
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+  .btn-outline {
+    background: var(--white);
+    color: var(--gold-dark);
+    border: 2px solid var(--gold);
+    margin-top: 10px;
+  }
+  .btn-outline:active {
+    background: var(--cream);
+  }
+
+  /* CTA banner */
+  .cta-banner {
+    background: linear-gradient(135deg, var(--brown-dark), var(--brown-mid));
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .cta-banner .cta-text {
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+  .cta-banner .cta-sub {
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* Form */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: var(--font);
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--cream-light);
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .checkbox-group input[type=checkbox] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--gold-dark);
+    flex-shrink: 0;
+  }
+  .checkbox-group label {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* Success page */
+  .success-page {
+    text-align: center;
+    padding-top: 40px;
+  }
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #3d8b40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px auto;
+    font-size: 36px;
+    color: var(--white);
+  }
+  .success-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+  .success-sub {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.7;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--text-light);
+    line-height: 1.8;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--brown-dark);
+    color: var(--white);
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* Scenario selector tabs */
+  .scenario-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .scenario-tab {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: var(--white);
+    border: 2px solid var(--border);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+  }
+  .scenario-tab.active {
+    border-color: var(--gold);
+    background: var(--cream);
+    color: var(--gold-dark);
+  }
+  .scenario-tab .tab-emoji {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  /* Legal ref badge */
+  .legal-ref {
+    display: inline-block;
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 8px;
+  }
+
+  /* Result highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
+    border: 1px solid #FFE0B2;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--orange);
+    line-height: 1.7;
+  }
+
+  .highlight-box.red {
+    background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+    border-color: #EF9A9A;
+    color: var(--red);
+  }
+  .highlight-box.green {
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    border-color: #A5D6A7;
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ==================== PAGE 1: Home ==================== -->
+  <div class="page active" id="page-home">
+    <div class="header">
+      <div class="header-tag"><span>财税合规自测</span></div>
+      <h1>大额资金往来<br/>您的税负合规吗？</h1>
+      <p>三分钟自测，了解您的税务风险等级</p>
+    </div>
+
+    <div class="service-cards">
+      <div class="service-card card-dividend" onclick="goCalc('dividend')">
+        <div class="icon-box">💰</div>
+        <div class="card-info">
+          <div class="card-title">股东分红</div>
+          <div class="card-sub">利润分配方案 · 个税/协定税率</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+
+      <div class="service-card card-brokerage" onclick="goCalc('brokerage')">
+        <div class="icon-box">🤝</div>
+        <div class="card-info">
+          <div class="card-title">居间费 / 佣金</div>
+          <div class="card-sub">税目认定 · 劳务报酬 vs 经营所得</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+
+      <div class="service-card card-labor" onclick="goCalc('labor')">
+        <div class="icon-box">📋</div>
+        <div class="card-info">
+          <div class="card-title">劳务费</div>
+          <div class="card-sub">劳务报酬 · 代扣代缴合规</div>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+
+    <div class="trust-section">
+      <div class="trust-stats">
+        <div class="trust-stat">
+          <div class="num">200+</div>
+          <div class="label">服务企业</div>
+        </div>
+        <div class="trust-stat">
+          <div class="num">3</div>
+          <div class="label">核心场景</div>
+        </div>
+        <div class="trust-stat">
+          <div class="num">100%</div>
+          <div class="label">制度框架内操作</div>
+        </div>
+      </div>
+      <div class="trust-disclaimer">
+        ⚠️ 本工具测算结果仅供参考，不构成税务建议<br/>
+        合规是底线，准确适用政策是企业的合法权益
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2: Calculator ==================== -->
+  <div class="page" id="page-calc">
+    <div class="sub-header">
+      <button class="back-btn" onclick="goHome()">←</button>
+      <div class="title" id="calc-title">股东分红自测</div>
+    </div>
+
+    <!-- Scenario tabs -->
+    <div class="scenario-tabs" id="scenario-tabs">
+      <div class="scenario-tab active" data-type="dividend" onclick="switchScenario('dividend')">
+        <span class="tab-emoji">💰</span>股东分红
+      </div>
+      <div class="scenario-tab" data-type="brokerage" onclick="switchScenario('brokerage')">
+        <span class="tab-emoji">🤝</span>居间费
+      </div>
+      <div class="scenario-tab" data-type="labor" onclick="switchScenario('labor')">
+        <span class="tab-emoji">📋</span>劳务费
+      </div>
+    </div>
+
+    <!-- Intro text (dynamic) -->
+    <div class="calc-intro" id="calc-intro"></div>
+
+    <!-- Amount input -->
+    <div class="amount-input-group">
+      <div class="input-label" id="input-label">请输入分红金额</div>
+      <div class="amount-input-row">
+        <span class="currency">¥</span>
+        <input type="text" id="amount-input" placeholder="0" maxlength="10" inputmode="numeric">
+        <span class="unit">万元</span>
+      </div>
+      <div class="quick-amounts" id="quick-amounts"></div>
+      <div class="slider-container">
+        <input type="range" id="amount-slider" min="0" max="100" value="0" step="1">
+        <div class="slider-labels">
+          <span>0</span>
+          <span id="slider-max-label">100万</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="result-card" id="result-card" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:600;color:var(--text-mid);">测算结果</span>
+        <span class="risk-badge" id="risk-badge"></span>
+      </div>
+      <div id="result-rows"></div>
+    </div>
+
+    <!-- Advice -->
+    <div class="advice-section" id="advice-section" style="display:none;">
+      <div class="advice-title">📌 合规建议</div>
+      <div id="advice-items"></div>
+      <div class="legal-ref" id="legal-ref"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-banner" id="cta-banner" style="display:none;">
+      <div class="cta-text">需要专属合规方案？</div>
+      <div class="cta-sub">一对一方案，在制度框架内合规操作</div>
+      <button class="btn btn-primary" onclick="goContact()">获取专属合规方案 →</button>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3: Contact ==================== -->
+  <div class="page" id="page-contact">
+    <div class="sub-header">
+      <button class="back-btn" onclick="goCalcFromContact()">←</button>
+      <div class="title">获取专属方案</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:16px;">
+        请填写以下信息，我们的顾问将在 <strong style="color:var(--gold-dark);">24小时内</strong> 与您联系，提供一对一的合规方案建议。
+      </div>
+
+      <div class="form-group">
+        <label>姓名 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="contact-name" placeholder="请输入您的称呼">
+      </div>
+
+      <div class="form-group">
+        <label>手机号码 <span style="color:var(--red)">*</span></label>
+        <input type="tel" id="contact-phone" placeholder="请输入手机号码" maxlength="11">
+      </div>
+
+      <div class="form-group">
+        <label>需求描述</label>
+        <textarea id="contact-desc" placeholder="请简要描述您关注的问题（如：股东分红方案、居间费合规等）"></textarea>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="privacy-consent">
+        <label for="privacy-consent">我已阅读并同意<a href="javascript:void(0)" style="color:var(--gold-dark);" onclick="alert('我们承诺：您提交的信息仅用于本次咨询服务，不会用于其他任何用途。')">《隐私政策》</a></label>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitForm()">提交，获取专属方案</button>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4: Success ==================== -->
+  <div class="page" id="page-success">
+    <div class="success-page">
+      <div class="success-icon">✓</div>
+      <div class="success-title">提交成功！</div>
+      <div class="success-sub">
+        我们的顾问将在 <strong style="color:var(--gold-dark);">24小时内</strong> 与您联系<br/><br/>
+        如需紧急咨询，请直接添加微信<br/>
+        <strong style="color:var(--gold-dark);">咨询 📩</strong>
+      </div>
+
+      <div style="margin-top:30px;">
+        <button class="btn btn-primary" onclick="goHome()">返回首页</button>
+        <button class="btn btn-outline" onclick="goCalcFromSuccess()">继续自测其他场景</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer" id="footer" style="display:none;">
+    专业合规服务 · 为您的企业保驾护航<br/>
+    <span style="font-size:10px;">本工具测算结果仅供参考，不构成税务建议</span>
+  </div>
+
+</div>
+
+<script>
+// ============ State ============
+let currentScenario = 'dividend';
+let amountWan = 0;
+let lastCalcPage = '';
+
+// ============ Navigation ============
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('footer').style.display = (id === 'home') ? 'none' : 'block';
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  showPage('home');
+}
+
+function goCalc(type) {
+  currentScenario = type;
+  lastCalcPage = 'home';
+  document.getElementById('amount-input').value = '';
+  amountWan = 0;
+  document.getElementById('amount-slider').value = 0;
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('advice-section').style.display = 'none';
+  document.getElementById('cta-banner').style.display = 'none';
+  updateScenarioUI();
+  showPage('calc');
+  updateCalcTitle();
+}
+
+function goCalcFromContact() {
+  lastCalcPage = 'contact';
+  showPage('calc');
+}
+
+function goCalcFromSuccess() {
+  lastCalcPage = 'success';
+  showPage('calc');
+}
+
+function goContact() {
+  lastCalcPage = 'calc';
+  // Pre-fill scenario info
+  const descEl = document.getElementById('contact-desc');
+  const names = { dividend: '股东分红方案', brokerage: '居间费合规', labor: '劳务费合规' };
+  if (!descEl.value) descEl.value = names[currentScenario] || '';
+  showPage('contact');
+}
+
+function switchScenario(type) {
+  currentScenario = type;
+  document.getElementById('amount-input').value = '';
+  amountWan = 0;
+  document.getElementById('amount-slider').value = 0;
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('advice-section').style.display = 'none';
+  document.getElementById('cta-banner').style.display = 'none';
+  updateScenarioUI();
+  updateCalcTitle();
+}
+
+// ============ UI Updates ============
+function updateScenarioUI() {
+  document.querySelectorAll('.scenario-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.type === currentScenario);
+  });
+
+  const configs = {
+    dividend: {
+      title: '股东分红自测',
+      intro: '根据<strong>《个人所得税法》</strong>及<strong>税收协定</strong>，个人股东分红适用 20% 个税税率；非居民企业/外籍个人可能适用协定优惠税率（5%-10%）。居民企业间分红免税。',
+      label: '请输入分红金额',
+      sliderMax: 500,
+      sliderMaxLabel: '500万',
+      quickAmounts: [10, 50, 100, 200, 500]
+    },
+    brokerage: {
+      title: '居间费 / 佣金自测',
+      intro: '居间费/佣金的<strong>税目认定是关键</strong>。错误认定为劳务报酬（20%-40% 预扣）而非经营所得（5%-35%），可能面临补税+罚款风险。需根据业务实质判断。',
+      label: '请输入居间费金额',
+      sliderMax: 500,
+      sliderMaxLabel: '500万',
+      quickAmounts: [10, 50, 100, 200, 500]
+    },
+    labor: {
+      title: '劳务费自测',
+      intro: '劳务报酬适用 20%-40% 三级超额累进预扣率，年度汇算清缴时并入综合所得。未依法代扣代缴的，税务机关可处应扣未扣税款 <strong>50% 至 3 倍罚款</strong>。',
+      label: '请输入劳务费金额',
+      sliderMax: 200,
+      sliderMaxLabel: '200万',
+      quickAmounts: [5, 10, 20, 50, 100]
+    }
+  };
+
+  const config = configs[currentScenario];
+
+  document.getElementById('calc-intro').innerHTML = config.intro;
+  document.getElementById('input-label').textContent = config.label;
+  document.getElementById('slider-max-label').textContent = config.sliderMaxLabel;
+
+  const slider = document.getElementById('amount-slider');
+  slider.max = config.sliderMax;
+
+  const quickContainer = document.getElementById('quick-amounts');
+  quickContainer.innerHTML = config.quickAmounts.map(a =>
+    `<button class="quick-amount" onclick="setAmount(${a})">${a}万</button>`
+  ).join('');
+}
+
+function updateCalcTitle() {
+  const titles = {
+    dividend: '股东分红自测',
+    brokerage: '居间费 / 佣金自测',
+    labor: '劳务费自测'
+  };
+  document.getElementById('calc-title').textContent = titles[currentScenario];
+}
+
+// ============ Amount Input ============
+function setAmount(val) {
+  document.getElementById('amount-input').value = val;
+  document.getElementById('amount-slider').value = val;
+  amountWan = val;
+  updateQuickButtonStyles();
+  calculateAndShow();
+}
+
+document.getElementById('amount-input').addEventListener('input', function(e) {
+  let val = e.target.value.replace(/[^\d.]/g, '');
+  // Allow only one decimal point
+  const parts = val.split('.');
+  if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+  e.target.value = val;
+
+  const num = parseFloat(val);
+  if (!isNaN(num)) {
+    amountWan = num;
+    const slider = document.getElementById('amount-slider');
+    if (num <= parseInt(slider.max)) {
+      slider.value = Math.round(num);
+    }
+    updateQuickButtonStyles();
+    calculateAndShow();
+  } else {
+    hideResults();
+  }
+});
+
+document.getElementById('amount-slider').addEventListener('input', function(e) {
+  const val = parseInt(e.target.value);
+  document.getElementById('amount-input').value = val;
+  amountWan = val;
+  updateQuickButtonStyles();
+  calculateAndShow();
+});
+
+function updateQuickButtonStyles() {
+  document.querySelectorAll('.quick-amount').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.textContent) === Math.round(amountWan));
+  });
+}
+
+// ============ Tax Calculation ============
+function calculateAndShow() {
+  if (amountWan <= 0) {
+    hideResults();
+    return;
+  }
+
+  const amountYuan = amountWan * 10000;
+
+  let resultRows, riskLevel, riskText, adviceItems, legalRef;
+
+  if (currentScenario === 'dividend') {
+    const result = calcDividend(amountYuan);
+    resultRows = result.rows;
+    riskLevel = result.riskLevel;
+    riskText = result.riskText;
+    adviceItems = result.adviceItems;
+    legalRef = '依据：《个人所得税法》第3条、税收协定相关条款';
+  } else if (currentScenario === 'brokerage') {
+    const result = calcBrokerage(amountYuan);
+    resultRows = result.rows;
+    riskLevel = result.riskLevel;
+    riskText = result.riskText;
+    adviceItems = result.adviceItems;
+    legalRef = '依据：《个人所得税法实施条例》第6条、第8条';
+  } else {
+    const result = calcLabor(amountYuan);
+    resultRows = result.rows;
+    riskLevel = result.riskLevel;
+    riskText = result.riskText;
+    adviceItems = result.adviceItems;
+    legalRef = '依据：《个人所得税法》第6条、《税收征收管理法》第69条';
+  }
+
+  // Render results
+  document.getElementById('result-rows').innerHTML = resultRows.map(r =>
+    `<div class="result-row">
+      <span class="r-label">${r.label}</span>
+      <span class="r-value ${r.highlight || ''}">${r.value}</span>
+    </div>`
+  ).join('');
+
+  // Risk badge
+  const badgeClass = riskLevel === 'low' ? 'risk-low' : riskLevel === 'medium' ? 'risk-medium' : 'risk-high';
+  document.getElementById('risk-badge').className = 'risk-badge ' + badgeClass;
+  document.getElementById('risk-badge').textContent = riskText;
+
+  // Advice
+  document.getElementById('advice-items').innerHTML = adviceItems.map(a =>
+    `<div class="advice-item">
+      <span class="advice-icon">${a.icon || '▸'}</span>
+      <span>${a.text}</span>
+    </div>`
+  ).join('');
+  document.getElementById('legal-ref').textContent = legalRef;
+
+  // Show
+  document.getElementById('result-card').style.display = 'block';
+  document.getElementById('advice-section').style.display = 'block';
+  document.getElementById('cta-banner').style.display = 'block';
+
+  // Scroll to result
+  setTimeout(() => {
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function hideResults() {
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('advice-section').style.display = 'none';
+  document.getElementById('cta-banner').style.display = 'none';
+}
+
+// ---------- Dividend ----------
+function calcDividend(amountYuan) {
+  const personalTax = amountYuan * 0.20;
+  const afterTax = amountYuan - personalTax;
+  const effectiveRate = 20;
+
+  let riskLevel = 'low';
+  let riskText = '低风险 · 有优化空间';
+  let highlightBox = '';
+
+  if (amountYuan >= 5000000) {
+    riskLevel = 'high';
+    riskText = '⚠️ 高风险 · 建议立即咨询';
+  } else if (amountYuan >= 1000000) {
+    riskLevel = 'medium';
+    riskText = '⚡ 中等风险 · 建议优化';
+  }
+
+  const rows = [
+    { label: '分红金额', value: formatMoney(amountYuan) },
+    { label: '预计个税（20%）', value: formatMoney(personalTax), highlight: 'tax-amount' },
+    { label: '税后到手', value: formatMoney(afterTax) },
+    { label: '实际税率', value: effectiveRate + '%' }
+  ];
+
+  const adviceItems = [
+    { icon: '▸', text: '如为居民企业间分红，依据企业所得税法第26条，可依法享受免税待遇' },
+    { icon: '▸', text: '如涉及非居民企业/外籍个人，建议核查适用的税收协定优惠税率（通常5%-10%）' },
+    { icon: '▸', text: '利润分配方案应在分红前完成合规设计，事后调整空间有限' }
+  ];
+
+  return { rows, riskLevel, riskText, adviceItems };
+}
+
+// ---------- Brokerage ----------
+function calcBrokerage(amountYuan) {
+  // Labor service calculation
+  const taxable = amountYuan > 4000 ? amountYuan * 0.8 : amountYuan - 800;
+  let laborTax = 0;
+  if (taxable <= 20000) laborTax = taxable * 0.20;
+  else if (taxable <= 50000) laborTax = taxable * 0.30 - 2000;
+  else laborTax = taxable * 0.40 - 7000;
+
+  const laborRate = amountYuan > 0 ? ((laborTax / amountYuan) * 100).toFixed(1) : 0;
+
+  // Business income calculation (simplified)
+  const bizTaxable = amountYuan * 0.9; // assume 10% cost deduction
+  let bizTax = 0;
+  if (bizTaxable <= 30000) bizTax = bizTaxable * 0.05;
+  else if (bizTaxable <= 90000) bizTax = bizTaxable * 0.10 - 1500;
+  else if (bizTaxable <= 300000) bizTax = bizTaxable * 0.20 - 10500;
+  else if (bizTaxable <= 500000) bizTax = bizTaxable * 0.30 - 40500;
+  else bizTax = bizTaxable * 0.35 - 65500;
+
+  const bizRate = amountYuan > 0 ? ((bizTax / amountYuan) * 100).toFixed(1) : 0;
+
+  let riskLevel = 'high';
+  let riskText = '⚠️ 高风险 · 税目认定是关键';
+
+  if (amountYuan < 100000) {
+    riskLevel = 'medium';
+    riskText = '⚡ 中等风险 · 建议确认税目';
+  }
+
+  const rows = [
+    { label: '居间费金额', value: formatMoney(amountYuan) },
+    { label: '若按劳务报酬计税', value: formatMoney(laborTax), highlight: 'tax-amount' },
+    { label: '劳务报酬实际税率', value: laborRate + '%' },
+    { label: '若按经营所得计税', value: formatMoney(bizTax) },
+    { label: '经营所得实际税率', value: bizRate + '%' }
+  ];
+
+  const adviceItems = [
+    { icon: '▸', text: '税目认定需根据业务实质判断：是否独立经营、是否承担经营风险、是否有固定经营场所等' },
+    { icon: '▸', text: '错误认定为劳务报酬可能导致多缴税款；错误认定为经营所得可能面临补税+罚款' },
+    { icon: '▸', text: '建议在业务发生前完成税目认定，保留完整业务合同、资金流水等证据链' }
+  ];
+
+  return { rows, riskLevel, riskText, adviceItems };
+}
+
+// ---------- Labor ----------
+function calcLabor(amountYuan) {
+  const taxable = amountYuan > 4000 ? amountYuan * 0.8 : amountYuan - 800;
+  let tax = 0;
+  if (taxable <= 20000) tax = taxable * 0.20;
+  else if (taxable <= 50000) tax = taxable * 0.30 - 2000;
+  else tax = taxable * 0.40 - 7000;
+
+  const effectiveRate = amountYuan > 0 ? ((tax / amountYuan) * 100).toFixed(1) : 0;
+  const afterTax = amountYuan - tax;
+  const penaltyMin = tax * 0.5;
+  const penaltyMax = tax * 3;
+
+  let riskLevel = 'low';
+  let riskText = '低风险 · 合规申报';
+
+  if (amountYuan >= 500000) {
+    riskLevel = 'high';
+    riskText = '⚠️ 高风险 · 大额劳务费需重点关注';
+  } else if (amountYuan >= 200000) {
+    riskLevel = 'medium';
+    riskText = '⚡ 中等风险 · 注意代扣义务';
+  }
+
+  const rows = [
+    { label: '劳务费金额', value: formatMoney(amountYuan) },
+    { label: '应纳税所得额（80%）', value: formatMoney(taxable) },
+    { label: '预扣个税', value: formatMoney(tax), highlight: 'tax-amount' },
+    { label: '实际预扣率', value: effectiveRate + '%' },
+    { label: '税后到手', value: formatMoney(afterTax) }
+  ];
+
+  const adviceItems = [
+    { icon: '▸', text: '支付方有法定代扣代缴义务，未履行可处应扣未扣税款50%-3倍罚款（《税收征收管理法》第69条）' },
+    { icon: '▸', text: '劳务报酬预扣率较高（最高40%），但年度汇算清缴时可并入综合所得，可能退税' },
+    { icon: '▸', text: '建议建立规范的劳务费支付流程，保留合同、发票、银行流水等完整凭证' }
+  ];
+
+  return { rows, riskLevel, riskText, adviceItems };
+}
+
+// ============ Contact Form ============
+
+// 后端 API 地址
+// 自动检测：同域部署时自动使用当前域名，否则留空使用降级模式
+// 也可手动设置：window.API_URL = 'https://api.your-domain.com';
+const API_BASE = (() => {
+  if (window.API_URL) return window.API_URL;
+  // 同域部署（后端 serve 静态文件）：自动使用当前域名
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isLocal) return 'http://localhost:8080';
+  // 线上部署时，如果前后端同域，API 就是当前域名
+  return window.location.origin || '';
+})();
+
+async function submitForm() {
+  const name = document.getElementById('contact-name').value.trim();
+  const phone = document.getElementById('contact-phone').value.trim();
+  const desc = document.getElementById('contact-desc').value.trim();
+  const consent = document.getElementById('privacy-consent').checked;
+  const submitBtn = document.querySelector('#page-contact .btn-primary');
+
+  if (!name) { showToast('请输入姓名'); return; }
+  if (!phone) { showToast('请输入手机号码'); return; }
+  if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('请输入正确的手机号码'); return; }
+  if (!consent) { showToast('请阅读并同意隐私政策'); return; }
+
+  // 显示 loading
+  submitBtn.disabled = true;
+  submitBtn.textContent = '正在提交...';
+
+  const leadData = {
+    name, phone, desc,
+    scenario: currentScenario,
+    amount: amountWan
+  };
+
+  // 如果配置了后端 API，尝试推送；否则直接保存到 localStorage
+  if (API_BASE) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadData)
+      });
+
+      if (resp.ok) {
+        const result = await resp.json();
+        console.log('Lead submitted to API:', result);
+        saveLocally(leadData, result.channels);
+        finishSubmit(submitBtn);
+        return;
+      }
+    } catch (err) {
+      console.warn('API unreachable, falling back to local storage:', err.message);
+    }
+  }
+
+  // 降级：保存到 localStorage
+  saveLocally(leadData, { local: '已保存' });
+  showToast('提交成功（离线模式）');
+  setTimeout(() => {
+    finishSubmit(submitBtn);
+  }, 800);
+}
+
+function saveLocally(leadData, channels) {
+  const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+  leads.push({ ...leadData, timestamp: new Date().toISOString(), channels });
+  localStorage.setItem('leads', JSON.stringify(leads));
+}
+
+function finishSubmit(submitBtn) {
+  document.getElementById('contact-name').value = '';
+  document.getElementById('contact-phone').value = '';
+  document.getElementById('contact-desc').value = '';
+  document.getElementById('privacy-consent').checked = false;
+  submitBtn.disabled = false;
+  submitBtn.textContent = '提交，获取专属方案';
+  showPage('success');
+}
+
+// ============ Utilities ============
+function formatMoney(yuan) {
+  if (yuan >= 10000) {
+    return '¥' + (yuan / 10000).toFixed(1) + '万';
+  }
+  return '¥' + yuan.toLocaleString('zh-CN');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ============ Init ============
+updateScenarioUI();
+updateCalcTitle();
+
+// Set footer visibility on home
+document.getElementById('footer').style.display = 'none';
+</script>
+</body>
+</html>
