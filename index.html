@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://smtpjs.com/v3/smtp.js"></script>
 <meta name="description" content="大额资金往来，您的税负合规吗？专业合规自测工具">
 <meta property="og:title" content="大额资金往来 您的税负合规吗？">
 <meta property="og:description" content="分红·居间费·劳务费，三分钟自测税负风险">
@@ -1196,17 +1197,63 @@ function calcLabor(amountYuan) {
 
 // ============ Contact Form ============
 
-// 后端 API 地址
-// 自动检测：同域部署时自动使用当前域名，否则留空使用降级模式
-// 也可手动设置：window.API_URL = 'https://api.your-domain.com';
-const API_BASE = (() => {
-  if (window.API_URL) return window.API_URL;
-  // 同域部署（后端 serve 静态文件）：自动使用当前域名
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocal) return 'http://localhost:8080';
-  // 线上部署时，如果前后端同域，API 就是当前域名
-  return window.location.origin || '';
-})();
+// ============ 邮件推送配置 ============
+// 使用 SMTP.js 在前端直接发送邮件通知（无需后端服务器）
+// 你的 QQ 邮箱 SMTP 配置
+const EMAIL_CONFIG = {
+  host: 'smtp.qq.com',
+  port: 465,
+  secure: true,
+  username: '20750337@qq.com',
+  password: 'ecdvngknnwtccafb',  // QQ邮箱授权码
+  from: '20750337@qq.com',
+  to: '20750337@qq.com'
+};
+
+// 场景中文名
+const SCENARIO_NAMES = { dividend: '股东分红', brokerage: '居间费/佣金', labor: '劳务费' };
+
+async function sendEmailNotification(leadData) {
+  const scenarioCn = SCENARIO_NAMES[leadData.scenario] || leadData.scenario || '未指定';
+  const amountStr = leadData.amount && leadData.amount > 0 ? leadData.amount + '万元' : '未填写';
+  const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
+  const subject = `【新线索】${leadData.name} - ${scenarioCn} - ${amountStr}`;
+
+  const htmlBody = `
+    <div style="font-family: 'PingFang SC','Microsoft YaHei',sans-serif;max-width:500px;padding:20px;">
+      <h2 style="color:#8B6914;border-bottom:2px solid #C49A52;padding-bottom:8px;">📩 新线索提醒</h2>
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+        <tr><td style="padding:8px 12px;color:#6B5A44;font-weight:600;width:80px;">姓名</td><td style="padding:8px 12px;">${leadData.name}</td></tr>
+        <tr style="background:#FAF6F0;"><td style="padding:8px 12px;color:#6B5A44;font-weight:600;">手机</td><td style="padding:8px 12px;">${leadData.phone}</td></tr>
+        <tr><td style="padding:8px 12px;color:#6B5A44;font-weight:600;">场景</td><td style="padding:8px 12px;">${scenarioCn}</td></tr>
+        <tr style="background:#FAF6F0;"><td style="padding:8px 12px;color:#6B5A44;font-weight:600;">测算金额</td><td style="padding:8px 12px;">${amountStr}</td></tr>
+        <tr><td style="padding:8px 12px;color:#6B5A44;font-weight:600;">需求描述</td><td style="padding:8px 12px;">${leadData.desc || '未填写'}</td></tr>
+        <tr style="background:#FAF6F0;"><td style="padding:8px 12px;color:#6B5A44;font-weight:600;">提交时间</td><td style="padding:8px 12px;">${now}</td></tr>
+      </table>
+      <p style="margin-top:16px;color:#8B7355;font-size:12px;">线索来源：大额资金往来合规自测工具</p>
+    </div>`;
+
+  // 使用 SMTP.js CDN 发送
+  try {
+    const result = await Email.send({
+      Host: EMAIL_CONFIG.host,
+      Port: EMAIL_CONFIG.port,
+      SecureToken: null,  // 不使用 SecureToken，直接用账号密码
+      Username: EMAIL_CONFIG.username,
+      Password: EMAIL_CONFIG.password,
+      From: EMAIL_CONFIG.from,
+      To: EMAIL_CONFIG.to,
+      Subject: subject,
+      Body: htmlBody
+    });
+    console.log('邮件发送成功:', result);
+    return true;
+  } catch (err) {
+    console.error('邮件发送失败:', err);
+    return false;
+  }
+}
 
 async function submitForm() {
   const name = document.getElementById('contact-name').value.trim();
@@ -1220,43 +1267,24 @@ async function submitForm() {
   if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('请输入正确的手机号码'); return; }
   if (!consent) { showToast('请阅读并同意隐私政策'); return; }
 
-  // 显示 loading
   submitBtn.disabled = true;
   submitBtn.textContent = '正在提交...';
 
-  const leadData = {
-    name, phone, desc,
-    scenario: currentScenario,
-    amount: amountWan
-  };
+  const leadData = { name, phone, desc, scenario: currentScenario, amount: amountWan };
 
-  // 如果配置了后端 API，尝试推送；否则直接保存到 localStorage
-  if (API_BASE) {
-    try {
-      const resp = await fetch(`${API_BASE}/api/leads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(leadData)
-      });
+  // 直接发送邮件通知
+  const emailSent = await sendEmailNotification(leadData);
 
-      if (resp.ok) {
-        const result = await resp.json();
-        console.log('Lead submitted to API:', result);
-        saveLocally(leadData, result.channels);
-        finishSubmit(submitBtn);
-        return;
-      }
-    } catch (err) {
-      console.warn('API unreachable, falling back to local storage:', err.message);
-    }
+  // 同时保存到 localStorage 作为备份
+  saveLocally(leadData, { email: emailSent ? '已推送' : '推送失败' });
+
+  if (emailSent) {
+    showToast('提交成功，顾问将在24小时内联系您');
+  } else {
+    showToast('提交成功（通知发送失败，请直接私信）');
   }
 
-  // 降级：保存到 localStorage
-  saveLocally(leadData, { local: '已保存' });
-  showToast('提交成功（离线模式）');
-  setTimeout(() => {
-    finishSubmit(submitBtn);
-  }, 800);
+  setTimeout(() => finishSubmit(submitBtn), 500);
 }
 
 function saveLocally(leadData, channels) {
