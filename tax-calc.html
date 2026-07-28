@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="个税计算器 - 工资薪金、劳务报酬、年终奖个税计算">
+<meta property="og:title" content="个税计算器">
+<meta property="og:description" content="快速计算工资个税、劳务报酬个税、年终奖个税">
+<title>个税计算器</title>
+<style>
+  :root {
+    --brown-dark: #3C2F1D; --brown-mid: #5C3D1E;
+    --gold: #C49A52; --gold-dark: #8B6914; --gold-light: #D4B870;
+    --cream: #F5EDE0; --cream-light: #FAF6F0;
+    --green: #2D5A27; --text-dark: #3C2F1D; --text-mid: #6B5A44;
+    --text-light: #8B7355; --white: #FFFFFF; --red: #C0392B;
+    --border: #E8E0D5; --shadow: 0 4px 16px rgba(60,47,29,0.08);
+    --radius: 14px; --radius-sm: 10px;
+    --font: -apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font); background:var(--cream-light); color:var(--text-dark); -webkit-font-smoothing:antialiased; min-height:100vh; }
+  .app { max-width:600px; margin:0 auto; padding:0 16px 40px; }
+  .header { background:linear-gradient(180deg,var(--brown-dark),var(--brown-mid)); margin:0 -16px; padding:28px 16px 24px; text-align:center; border-radius:0 0 24px 24px; }
+  .header .tag { display:inline-block; background:rgba(196,154,82,0.15); border:1px solid rgba(196,154,82,0.35); border-radius:20px; padding:4px 14px; margin-bottom:12px; }
+  .header .tag span { color:var(--gold-light); font-size:12px; letter-spacing:2px; }
+  .header h1 { color:var(--white); font-size:21px; font-weight:700; line-height:1.5; }
+  .header p { color:rgba(255,255,255,0.7); font-size:12px; margin-top:6px; }
+
+  /* Tabs */
+  .tabs { display:flex; gap:6px; margin:16px 0; background:var(--white); border-radius:var(--radius); padding:4px; box-shadow:var(--shadow); }
+  .tab { flex:1; padding:10px 6px; border-radius:10px; text-align:center; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text-mid); border:none; background:none; font-family:var(--font); }
+  .tab.active { background:var(--gold); color:var(--white); }
+  .tab .tab-emoji { display:block; font-size:18px; margin-bottom:2px; }
+
+  /* Cards */
+  .card { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .card-title { font-size:14px; font-weight:700; color:var(--gold-dark); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+
+  /* Input */
+  .input-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .input-row label { font-size:14px; color:var(--text-mid); white-space:nowrap; min-width:80px; }
+  .input-row input, .input-row select { flex:1; padding:10px 14px; border:2px solid var(--border); border-radius:10px; font-size:15px; font-family:var(--font); outline:none; transition:border 0.2s; background:var(--cream-light); color:var(--text-dark); }
+  .input-row input:focus, .input-row select:focus { border-color:var(--gold); }
+  .input-hint { font-size:11px; color:var(--text-light); margin-top:-8px; margin-bottom:12px; padding-left:90px; }
+
+  /* Quick preset */
+  .presets { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .preset { padding:6px 14px; border-radius:20px; background:var(--cream); border:1px solid var(--border); font-size:12px; color:var(--text-mid); cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+  .preset:active, .preset.selected { background:var(--gold); color:var(--white); border-color:var(--gold); }
+
+  /* Result */
+  .result-card { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .result-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
+  .result-row:last-child { border-bottom:none; }
+  .result-row .rl { font-size:14px; color:var(--text-mid); }
+  .result-row .rv { font-size:16px; font-weight:700; }
+  .result-row .rv.red { color:var(--red); }
+  .result-row .rv.green { color:var(--green); }
+  .result-total { background:linear-gradient(135deg,var(--gold-dark),var(--gold)); color:var(--white); border-radius:12px; padding:16px; text-align:center; margin-top:12px; }
+  .result-total .big { font-size:28px; font-weight:800; }
+  .result-total .sub { font-size:12px; opacity:0.85; margin-top:4px; }
+
+  /* Chart bars */
+  .bar-chart { margin:12px 0; }
+  .bar-row { display:flex; align-items:center; margin-bottom:8px; gap:8px; }
+  .bar-row .bar-label { width:64px; font-size:12px; color:var(--text-mid); text-align:right; flex-shrink:0; }
+  .bar-row .bar-track { flex:1; height:20px; background:var(--cream); border-radius:10px; overflow:hidden; }
+  .bar-row .bar-fill { height:100%; border-radius:10px; transition:width 0.5s ease; }
+  .bar-row .bar-val { width:60px; font-size:12px; font-weight:600; color:var(--text-dark); flex-shrink:0; }
+  .bar-tax .bar-fill { background:linear-gradient(90deg,#E74C3C,#C0392B); }
+  .bar-insurance .bar-fill { background:linear-gradient(90deg,#F39C12,#E67E22); }
+  .bar-net .bar-fill { background:linear-gradient(90deg,#27AE60,#2D5A27); }
+
+  /* CTA */
+  .cta { background:linear-gradient(135deg,var(--brown-dark),var(--brown-mid)); border-radius:var(--radius); padding:18px; text-align:center; margin:20px 0; }
+  .cta .cta-text { color:var(--white); font-size:14px; font-weight:600; margin-bottom:10px; }
+  .cta a { display:inline-block; background:linear-gradient(135deg,#07C160,#06AD56); color:#fff; padding:12px 28px; border-radius:25px; font-size:15px; font-weight:600; text-decoration:none; box-shadow:0 4px 14px rgba(7,193,96,0.3); }
+
+  .disclaimer { text-align:center; font-size:11px; color:var(--text-light); padding:16px 0; line-height:1.7; }
+
+  @media (max-width:380px) {
+    .input-row label { min-width:64px; font-size:13px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="tag"><span>个税计算器</span></div>
+    <h1>个人所得税<br/>快速计算</h1>
+    <p>依据《个人所得税法》及最新税率表</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('salary')"><span class="tab-emoji">💼</span>工资薪金</button>
+    <button class="tab" onclick="switchTab('labor')"><span class="tab-emoji">📋</span>劳务报酬</button>
+    <button class="tab" onclick="switchTab('bonus')"><span class="tab-emoji">🧧</span>年终奖</button>
+  </div>
+
+  <!-- ====== 工资薪金 ====== -->
+  <div id="panel-salary" class="panel">
+    <div class="card">
+      <div class="card-title">📊 收入与扣除</div>
+      <div class="input-row">
+        <label>税前月薪</label>
+        <input type="text" id="salary-income" placeholder="请输入月薪" inputmode="numeric" oninput="calcSalary()">
+      </div>
+      <div class="presets" id="salary-presets">
+        <button class="preset" onclick="setSalary(5000)">5千</button>
+        <button class="preset" onclick="setSalary(8000)">8千</button>
+        <button class="preset" onclick="setSalary(10000)">1万</button>
+        <button class="preset" onclick="setSalary(15000)">1.5万</button>
+        <button class="preset" onclick="setSalary(20000)">2万</button>
+        <button class="preset" onclick="setSalary(30000)">3万</button>
+        <button class="preset" onclick="setSalary(50000)">5万</button>
+      </div>
+      <div class="input-row">
+        <label>社保基数</label>
+        <input type="text" id="salary-base" placeholder="默认等于月薪" inputmode="numeric" oninput="calcSalary()">
+      </div>
+      <div class="input-hint">留空则按税前月薪计算五险一金</div>
+      <div class="input-row">
+        <label>公积金比例</label>
+        <select id="salary-fund" onchange="calcSalary()">
+          <option value="0">不缴纳</option>
+          <option value="5">5%</option>
+          <option value="7">7%</option>
+          <option value="8">8%</option>
+          <option value="10">10%</option>
+          <option value="12" selected>12%</option>
+        </select>
+      </div>
+      <div class="input-row">
+        <label>专项附加</label>
+        <select id="salary-deduction" onchange="calcSalary()">
+          <option value="0">无</option>
+          <option value="1000">子女教育 1000元</option>
+          <option value="1500">住房租金 1500元</option>
+          <option value="2000">赡养老人 2000元</option>
+          <option value="3000">子女+住房 2500元</option>
+          <option value="4000" selected>子女+老人+住房 4500元</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="result-card" id="salary-result" style="display:none;">
+      <div class="card-title">📋 计算结果（月度）</div>
+      <div id="salary-rows"></div>
+      <div class="bar-chart" id="salary-chart"></div>
+      <div class="result-total">
+        <div class="sub">税后月收入</div>
+        <div class="big" id="salary-net"></div>
+        <div class="sub" id="salary-year"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 劳务报酬 ====== -->
+  <div id="panel-labor" class="panel" style="display:none;">
+    <div class="card">
+      <div class="card-title">📋 劳务报酬计算</div>
+      <div class="input-row">
+        <label>劳务费金额</label>
+        <input type="text" id="labor-amount" placeholder="请输入金额" inputmode="numeric" oninput="calcLabor()">
+      </div>
+      <div class="presets">
+        <button class="preset" onclick="setLabor(1000)">1千</button>
+        <button class="preset" onclick="setLabor(5000)">5千</button>
+        <button class="preset" onclick="setLabor(10000)">1万</button>
+        <button class="preset" onclick="setLabor(20000)">2万</button>
+        <button class="preset" onclick="setLabor(50000)">5万</button>
+        <button class="preset" onclick="setLabor(100000)">10万</button>
+      </div>
+      <div class="input-hint">劳务报酬按 20%-40% 三级超额累进预扣</div>
+    </div>
+
+    <div class="result-card" id="labor-result" style="display:none;">
+      <div class="card-title">📋 计算结果</div>
+      <div id="labor-rows"></div>
+      <div class="result-total">
+        <div class="sub">预扣后到手</div>
+        <div class="big" id="labor-net"></div>
+        <div class="sub">年度汇算清缴时可能退税</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 年终奖 ====== -->
+  <div id="panel-bonus" class="panel" style="display:none;">
+    <div class="card">
+      <div class="card-title">🧧 年终奖计算</div>
+      <div class="input-row">
+        <label>年终奖金额</label>
+        <input type="text" id="bonus-amount" placeholder="请输入金额" inputmode="numeric" oninput="calcBonus()">
+      </div>
+      <div class="presets">
+        <button class="preset" onclick="setBonus(10000)">1万</button>
+        <button class="preset" onclick="setBonus(36000)">3.6万</button>
+        <button class="preset" onclick="setBonus(50000)">5万</button>
+        <button class="preset" onclick="setBonus(100000)">10万</button>
+        <button class="preset" onclick="setBonus(144000)">14.4万</button>
+        <button class="preset" onclick="setBonus(300000)">30万</button>
+      </div>
+      <div class="input-hint">年终奖单独计税：除以12找税率，全额适用</div>
+    </div>
+
+    <div class="result-card" id="bonus-result" style="display:none;">
+      <div class="card-title">📋 计算结果</div>
+      <div id="bonus-rows"></div>
+      <div class="result-total">
+        <div class="sub">税后到手</div>
+        <div class="big" id="bonus-net"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-text">需要专业合规方案？</div>
+    <a href="https://work.weixin.qq.com/kfid/kfcd03ec16d266ce2ed" target="_blank">💬 联系企业微信顾问</a>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 计算结果仅供参考，不构成税务建议<br/>
+    实际纳税以税务机关核定为准
+  </div>
+
+</div>
+
+<script>
+let currentTab = 'salary';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.textContent.includes(tab === 'salary' ? '工资' : tab === 'labor' ? '劳务' : '年终')));
+  document.getElementById('panel-salary').style.display = tab === 'salary' ? 'block' : 'none';
+  document.getElementById('panel-labor').style.display = tab === 'labor' ? 'block' : 'none';
+  document.getElementById('panel-bonus').style.display = tab === 'bonus' ? 'block' : 'none';
+}
+
+// ========== 工资薪金 ==========
+function setSalary(v) {
+  document.getElementById('salary-income').value = v;
+  document.querySelectorAll('#salary-presets .preset').forEach(b => b.classList.toggle('selected', parseInt(b.textContent) === v));
+  calcSalary();
+}
+
+function calcSalary() {
+  const income = parseFloat(document.getElementById('salary-income').value) || 0;
+  if (income <= 0) { document.getElementById('salary-result').style.display = 'none'; return; }
+
+  const baseInput = document.getElementById('salary-base').value;
+  const base = baseInput ? (parseFloat(baseInput) || income) : income;
+  const fundRate = parseFloat(document.getElementById('salary-fund').value) / 100;
+  const extraDeduction = parseFloat(document.getElementById('salary-deduction').value);
+
+  // 五险一金（简化：养老8% + 医疗2% + 失业0.5% + 公积金）
+  const insurance = base * (0.105 + fundRate);
+  const taxableIncome = Math.max(0, income - 5000 - insurance - extraDeduction);
+
+  // 累进税率
+  let tax = 0, rate = 0, quickDeduction = 0;
+  if (taxableIncome <= 3000) { rate = 0.03; quickDeduction = 0; }
+  else if (taxableIncome <= 12000) { rate = 0.10; quickDeduction = 210; }
+  else if (taxableIncome <= 25000) { rate = 0.20; quickDeduction = 1410; }
+  else if (taxableIncome <= 35000) { rate = 0.25; quickDeduction = 2660; }
+  else if (taxableIncome <= 55000) { rate = 0.30; quickDeduction = 4410; }
+  else if (taxableIncome <= 80000) { rate = 0.35; quickDeduction = 7160; }
+  else { rate = 0.45; quickDeduction = 15160; }
+
+  tax = Math.max(0, taxableIncome * rate - quickDeduction);
+  const netMonthly = income - insurance - tax;
+  const netYearly = netMonthly * 12;
+  const taxYearly = tax * 12;
+
+  document.getElementById('salary-rows').innerHTML = `
+    <div class="result-row"><span class="rl">税前月薪</span><span class="rv">${fmt(income)}</span></div>
+    <div class="result-row"><span class="rl">五险一金</span><span class="rv">${fmt(insurance)}</span></div>
+    <div class="result-row"><span class="rl">应纳税所得额</span><span class="rv">${fmt(taxableIncome)}</span></div>
+    <div class="result-row"><span class="rl">适用税率</span><span class="rv">${(rate*100).toFixed(0)}%</span></div>
+    <div class="result-row"><span class="rl">月个税</span><span class="rv red">${fmt(tax)}</span></div>
+  `;
+
+  const maxVal = income;
+  document.getElementById('salary-chart').innerHTML = `
+    <div class="bar-row bar-tax"><span class="bar-label">个税</span><div class="bar-track"><div class="bar-fill" style="width:${(tax/maxVal*100).toFixed(0)}%"></div></div><span class="bar-val">${fmt(tax)}</span></div>
+    <div class="bar-row bar-insurance"><span class="bar-label">五险一金</span><div class="bar-track"><div class="bar-fill" style="width:${(insurance/maxVal*100).toFixed(0)}%"></div></div><span class="bar-val">${fmt(insurance)}</span></div>
+    <div class="bar-row bar-net"><span class="bar-label">到手</span><div class="bar-track"><div class="bar-fill" style="width:${(netMonthly/maxVal*100).toFixed(0)}%"></div></div><span class="bar-val">${fmt(netMonthly)}</span></div>
+  `;
+
+  document.getElementById('salary-net').textContent = fmt(netMonthly);
+  document.getElementById('salary-year').textContent = `年税后收入 ${fmt(netYearly)} · 年个税 ${fmt(taxYearly)}`;
+  document.getElementById('salary-result').style.display = 'block';
+}
+
+// ========== 劳务报酬 ==========
+function setLabor(v) { document.getElementById('labor-amount').value = v; calcLabor(); }
+
+function calcLabor() {
+  const amount = parseFloat(document.getElementById('labor-amount').value) || 0;
+  if (amount <= 0) { document.getElementById('labor-result').style.display = 'none'; return; }
+
+  const taxable = amount > 4000 ? amount * 0.8 : Math.max(0, amount - 800);
+  let tax = 0, rate = 0;
+  if (taxable <= 20000) { tax = taxable * 0.20; rate = 20; }
+  else if (taxable <= 50000) { tax = taxable * 0.30 - 2000; rate = 30; }
+  else { tax = taxable * 0.40 - 7000; rate = 40; }
+
+  const net = amount - tax;
+  const effectiveRate = ((tax / amount) * 100).toFixed(1);
+
+  document.getElementById('labor-rows').innerHTML = `
+    <div class="result-row"><span class="rl">劳务费金额</span><span class="rv">${fmt(amount)}</span></div>
+    <div class="result-row"><span class="rl">应纳税所得额</span><span class="rv">${fmt(taxable)} (${amount>4000?'80%':'减800'})</span></div>
+    <div class="result-row"><span class="rl">适用预扣率</span><span class="rv">${rate}%</span></div>
+    <div class="result-row"><span class="rl">预扣个税</span><span class="rv red">${fmt(tax)}</span></div>
+    <div class="result-row"><span class="rl">实际税负率</span><span class="rv">${effectiveRate}%</span></div>
+  `;
+
+  document.getElementById('labor-net').textContent = fmt(net);
+  document.getElementById('labor-result').style.display = 'block';
+}
+
+// ========== 年终奖 ==========
+function setBonus(v) { document.getElementById('bonus-amount').value = v; calcBonus(); }
+
+function calcBonus() {
+  const amount = parseFloat(document.getElementById('bonus-amount').value) || 0;
+  if (amount <= 0) { document.getElementById('bonus-result').style.display = 'none'; return; }
+
+  const monthly = amount / 12;
+  let rate = 0, quickDeduction = 0;
+  if (monthly <= 3000) { rate = 0.03; quickDeduction = 0; }
+  else if (monthly <= 12000) { rate = 0.10; quickDeduction = 210; }
+  else if (monthly <= 25000) { rate = 0.20; quickDeduction = 1410; }
+  else if (monthly <= 35000) { rate = 0.25; quickDeduction = 2660; }
+  else if (monthly <= 55000) { rate = 0.30; quickDeduction = 4410; }
+  else if (monthly <= 80000) { rate = 0.35; quickDeduction = 7160; }
+  else { rate = 0.45; quickDeduction = 15160; }
+
+  const tax = Math.max(0, amount * rate - quickDeduction);
+  const net = amount - tax;
+
+  document.getElementById('bonus-rows').innerHTML = `
+    <div class="result-row"><span class="rl">年终奖金额</span><span class="rv">${fmt(amount)}</span></div>
+    <div class="result-row"><span class="rl">月均（÷12）</span><span class="rv">${fmt(monthly)}</span></div>
+    <div class="result-row"><span class="rl">适用税率</span><span class="rv">${(rate*100).toFixed(0)}%</span></div>
+    <div class="result-row"><span class="rl">速算扣除数</span><span class="rv">${fmt(quickDeduction)}</span></div>
+    <div class="result-row"><span class="rl">应纳税额</span><span class="rv red">${fmt(tax)}</span></div>
+    <div class="result-row"><span class="rl">实际税负</span><span class="rv">${((tax/amount)*100).toFixed(1)}%</span></div>
+  `;
+
+  document.getElementById('bonus-net').textContent = fmt(net);
+  document.getElementById('bonus-result').style.display = 'block';
+}
+
+function fmt(n) {
+  if (n >= 10000) return (n / 10000).toFixed(2) + '万';
+  return '¥' + Math.round(n).toLocaleString('zh-CN');
+}
+</script>
+</body>
+</html>
