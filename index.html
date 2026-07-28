@@ -814,13 +814,19 @@
     <div class="success-page">
       <div class="success-icon">✓</div>
       <div class="success-title">提交成功！</div>
-      <div class="success-sub">
-        我们的顾问将在 <strong style="color:var(--gold-dark);">24小时内</strong> 与您联系<br/><br/>
-        如需紧急咨询，请直接添加微信<br/>
-        <strong style="color:var(--gold-dark);">咨询 📩</strong>
+      <div class="success-sub" style="margin-bottom: 20px;">
+        我们将尽快与您联系
       </div>
 
-      <div style="margin-top:30px;">
+      <a id="kf-link" href="https://work.weixin.qq.com/kfid/kfcd03ec16d266ce2ed" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#07C160,#06AD56);color:#fff;padding:14px 32px;border-radius:25px;font-size:16px;font-weight:600;text-decoration:none;box-shadow:0 4px 14px rgba(7,193,96,0.3);letter-spacing:0.5px;">
+        💬 立即联系顾问
+      </a>
+
+      <div style="margin-top:24px;font-size:12px;color:var(--text-light);">
+        或稍后通过企业微信联系我们
+      </div>
+
+      <div style="margin-top:28px;">
         <button class="btn btn-primary" onclick="goHome()">返回首页</button>
         <button class="btn btn-outline" onclick="goCalcFromSuccess()">继续自测其他场景</button>
       </div>
@@ -1195,13 +1201,8 @@ function calcLabor(amountYuan) {
 }
 
 // ============ 表单提交配置 ============
-// 后端 API 地址：部署 server.py 后填入你的后端 URL
-// 留空则仅保存到 localStorage（无邮件推送）
-const API_URL = '';  // 例如 'https://your-backend.com'
-
-// Formspree 端点（在 formspree.io 注册后获得）
-// 如果配置了此项，优先使用 Formspree 推送邮件
-const FORMSPREE_URL = '';  // 例如 'https://formspree.io/f/xxxxxxxx'
+// 微信客服链接
+const WECOM_KF_URL = 'https://work.weixin.qq.com/kfid/kfcd03ec16d266ce2ed';
 
 // 场景中文名
 const SCENARIO_NAMES = { dividend: '股东分红', brokerage: '居间费/佣金', labor: '劳务费' };
@@ -1221,59 +1222,16 @@ async function submitForm() {
   submitBtn.disabled = true;
   submitBtn.textContent = '正在提交...';
 
-  const scenarioCn = SCENARIO_NAMES[currentScenario] || currentScenario;
-  const amountStr = amountWan > 0 ? amountWan + '万元' : '';
-  const leadData = { name, phone, desc, scenario: currentScenario, scenarioCn, amount: amountWan, amountStr };
+  const leadData = { name, phone, desc, scenario: currentScenario, amount: amountWan };
 
-  let pushOk = false;
+  // 保存到 localStorage
+  saveLocally(leadData, { note: '已保存' });
 
-  // 优先级：Formspree > 自建后端 API > 降级 localStorage
-  if (FORMSPREE_URL) {
-    pushOk = await submitToFormspree(leadData);
-  } else if (API_URL) {
-    pushOk = await submitToAPI(leadData);
-  }
+  showToast('提交成功！');
 
-  // 始终保存到 localStorage 作为备份
-  saveLocally(leadData, { pushed: pushOk });
-
-  if (pushOk) {
-    showToast('提交成功，顾问将在24小时内联系您');
-  } else {
-    showToast('提交成功' + (FORMSPREE_URL || API_URL ? '' : '（离线模式）'));
-  }
-
-  setTimeout(() => finishSubmit(submitBtn), 500);
-}
-
-async function submitToFormspree(data) {
-  try {
-    const resp = await fetch(FORMSPREE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: data.name,
-        phone: data.phone,
-        scenario: data.scenarioCn,
-        amount: data.amountStr,
-        desc: data.desc || '无'
-      })
-    });
-    if (resp.ok) { console.log('Formspree 推送成功'); return true; }
-  } catch (e) { console.warn('Formspree 推送失败:', e.message); }
-  return false;
-}
-
-async function submitToAPI(data) {
-  try {
-    const resp = await fetch(`${API_URL}/api/leads`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (resp.ok) { console.log('API 推送成功'); return true; }
-  } catch (e) { console.warn('API 推送失败:', e.message); }
-  return false;
+  setTimeout(() => {
+    finishSubmit(submitBtn);
+  }, 500);
 }
 
 function saveLocally(leadData, channels) {
